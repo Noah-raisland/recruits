@@ -531,6 +531,10 @@ public class FactionEditScreen extends ScreenBase<TeamEditMenu> {
     }
 
     private boolean checkCreationCondition(){
+        // A null or empty banner is never a valid creation state. Return early before the
+        // banner.save() calls below: in 1.21.1 ItemStack.save() throws on empty stacks.
+        if (this.banner == null || this.banner.isEmpty()) return false;
+
         boolean nameLength = this.textFieldTeamName != null && this.textFieldTeamName.getValue().length() >= 3 && this.textFieldTeamName.getValue().length() <= 32;
         boolean sufficientEmeralds = player.isCreative() || getPlayerCurrencyAmount() >= factionCreationPrice;
         boolean bannerNotEmpty = this.banner != null && !this.banner.isEmpty() && !RecruitsFactionManager.isBannerBlank(this.banner);
@@ -556,7 +560,7 @@ public class FactionEditScreen extends ScreenBase<TeamEditMenu> {
             }
         }
 
-        boolean bannerNotInUse = this.banner != null && !RecruitsFactionManager.isBannerInUse(((net.minecraft.nbt.CompoundTag) this.banner.save(net.minecraft.client.Minecraft.getInstance().level.registryAccess())), factions);
+        boolean bannerNotInUse = this.banner != null && !this.banner.isEmpty() && !RecruitsFactionManager.isBannerInUse(((net.minecraft.nbt.CompoundTag) this.banner.save(net.minecraft.client.Minecraft.getInstance().level.registryAccess())), factions);
 
         return bannerNotInUse && bannerNotEmpty && nameLength && leaderInfo != null && sufficientEmeralds && hasChanges && displayNameOK;
     }
