@@ -121,7 +121,10 @@ public class FactionEvents {
         MinecraftServer server = level.getServer();
         PlayerTeam team = server.getScoreboard().getPlayerTeam(teamName);
         int cost = RecruitsServerConfig.FactionCreationCost.get();
-        if(banner == null) banner = Items.BROWN_BANNER.getDefaultInstance();
+        // Guard empty as well as null: a modified client can submit an empty banner via
+        // MessageCreateTeam, and ItemStack.save() throws IllegalStateException on empty
+        // stacks in 1.21.1 (a server-side crash). Fall back to the default banner.
+        if(banner == null || banner.isEmpty()) banner = Items.BROWN_BANNER.getDefaultInstance();
         CompoundTag nbt = ((net.minecraft.nbt.CompoundTag) banner.save(net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer().registryAccess()));
 
         if (team != null) {
