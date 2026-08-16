@@ -17,7 +17,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(LivingEntity.class)
 public class AnimalMixin {
 
-    @Inject(method = "hurt", at = @At("HEAD"))
+    @Inject(method = "hurt", at = @At("HEAD"), remap = false)
     private void recruits$hurtWhenRecruitRides(DamageSource source, float amount, CallbackInfoReturnable<Boolean> ci) {
         LivingEntity self = (LivingEntity) (Object) this;
         if (self instanceof Animal animal
