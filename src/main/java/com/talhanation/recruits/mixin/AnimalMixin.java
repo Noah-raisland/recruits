@@ -9,12 +9,24 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(Animal.class)
+/**
+ * In Minecraft 1.21.1 Animal no longer declares its own hurt method. The
+ * implementation lives on LivingEntity, so inject there and restrict the
+ * behaviour to Animal instances at runtime.
+ */
+@Mixin(LivingEntity.class)
 public class AnimalMixin {
 
-    @SuppressWarnings("DataFlowIssue")    @Inject(method = "hurt", at = @At(value = "HEAD", target = "Lnet/minecraft/world/entity/animal/Animal;hurt(Lnet/minecraft/world/damagesource/DamageSource;F)Z"), remap = false)    private void hurtWhenRecruitsRides(DamageSource source, float amount, CallbackInfoReturnable<Boolean> ci) {
-        if (((Animal)(Object)this).isAlive() && ((Animal)(Object)this).isVehicle() && ((Animal)(Object)this).getControllingPassenger() instanceof AbstractRecruitEntity recruit) {
-            if(source.getEntity() instanceof LivingEntity target && recruit.canAttack(target))                recruit.setTarget(target);
+    @Inject(method = "hurt", at = @At("HEAD"))
+    private void recruits$hurtWhenRecruitRides(DamageSource source, float amount, CallbackInfoReturnable<Boolean> ci) {
+        LivingEntity self = (LivingEntity) (Object) this;
+        if (self instanceof Animal animal
+                && animal.isAlive()
+                && animal.isVehicle()
+                && animal.getControllingPassenger() instanceof AbstractRecruitEntity recruit
+                && source.getEntity() instanceof LivingEntity target
+                && recruit.canAttack(target)) {
+            recruit.setTarget(target);
         }
     }
 }
