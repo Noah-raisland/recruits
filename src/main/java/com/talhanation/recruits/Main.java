@@ -33,7 +33,6 @@ import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.neoforged.fml.loading.FMLPaths;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
@@ -55,10 +54,10 @@ public class Main {
     public static boolean isRPGZLoaded;
 
     public Main(IEventBus modEventBus, Dist dist, ModContainer modContainer) {
-
+        // Let NeoForge own the config lifecycle. Manually reading/correcting the
+        // config file from the mod constructor can race other mods' config setup.
         modContainer.registerConfig(ModConfig.Type.SERVER, RecruitsServerConfig.SERVER);
         modContainer.registerConfig(ModConfig.Type.CLIENT, RecruitsClientConfig.CLIENT);
-        RecruitsClientConfig.loadConfig(RecruitsClientConfig.CLIENT, FMLPaths.CONFIGDIR.get().resolve("recruits-client.toml"));
 
         modEventBus.addListener(this::setup);
         modEventBus.addListener(this::registerPayloads);
@@ -76,7 +75,9 @@ public class Main {
             modEventBus.addListener(ModShortcuts::registerBindings);
         }
 
-        //ModSounds.SOUNDS.register(modEventBus);
+        // Register this listener once. The old port registered it again from
+        // common setup, which caused every @SubscribeEvent handler here to be
+        // installed twice.
         NeoForge.EVENT_BUS.register(this);
     }
 
@@ -97,7 +98,6 @@ public class Main {
         NeoForge.EVENT_BUS.register(new DamageEvent());
         NeoForge.EVENT_BUS.register(new UpdateChecker());
         NeoForge.EVENT_BUS.register(new ClaimEvents());
-        NeoForge.EVENT_BUS.register(this);
 
         isMusketModLoaded = ModList.get().isLoaded("musketmod");//MusketMod
         isSmallShipsLoaded = ModList.get().isLoaded("smallships");//small ships
