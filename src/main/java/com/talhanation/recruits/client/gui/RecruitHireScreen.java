@@ -51,8 +51,13 @@ public class RecruitHireScreen extends ScreenBase<RecruitHireMenu> {
     @Override
     protected void containerTick() {
         super.containerTick();
-        if(hireButton != null){
-            hireButton.active = ClientManager.canPlayerHire;
+        // The server is authoritative about recruit limits and payment. Do not disable the
+        // button from the asynchronously synced canPlayerHire flag: if that flag is stale or
+        // misses its clientbound update, the GUI otherwise looks valid but silently ignores
+        // clicks. Keep the button usable whenever there is a valid group selected and let the
+        // server-side MessageHire/handleRecruiting path accept or reject the request.
+        if (hireButton != null) {
+            hireButton.active = group != null && !ClientManager.groups.isEmpty();
         }
     }
 
@@ -72,12 +77,15 @@ public class RecruitHireScreen extends ScreenBase<RecruitHireMenu> {
 
         if(ClientManager.currency != null) ClientManager.currency.setCount(recruit.getCost());
         hireButton = createHireButton();
-        if(group == null || ClientManager.groups.isEmpty()) hireButton.active = false;
+        hireButton.active = group != null && !ClientManager.groups.isEmpty();
     }
 
     private ExtendedButton createHireButton() {
         return addRenderableWidget(new ExtendedButton(leftPos + 7, topPos + 100, 80, 20, TEXT_HIRE,
                 button -> {
+                    if (group == null) {
+                        return;
+                    }
                     Main.SIMPLE_CHANNEL.sendToServer(new MessageHire(player.getUUID(), recruit.getUUID(), group.getUUID()));
                     this.onClose();
         }));
