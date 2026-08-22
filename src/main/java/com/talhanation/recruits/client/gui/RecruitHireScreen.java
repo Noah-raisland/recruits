@@ -23,6 +23,7 @@ import net.minecraft.world.entity.player.Player;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.client.gui.widget.ExtendedButton;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.text.DecimalFormat;
 
@@ -78,7 +79,11 @@ public class RecruitHireScreen extends ScreenBase<RecruitHireMenu> {
     private ExtendedButton createHireButton() {
         return addRenderableWidget(new ExtendedButton(leftPos + 7, topPos + 100, 80, 20, TEXT_HIRE,
                 button -> {
-                    Main.SIMPLE_CHANNEL.sendToServer(new MessageHire(player.getUUID(), recruit.getUUID(), group.getUUID()));
+                    if (group == null) {
+                        player.sendSystemMessage(Component.literal("Recruits: no group is selected."));
+                        return;
+                    }
+                    PacketDistributor.sendToServer(new MessageHire(player.getUUID(), recruit.getUUID(), group.getUUID()));
                     this.onClose();
         }));
     }
@@ -88,7 +93,7 @@ public class RecruitHireScreen extends ScreenBase<RecruitHireMenu> {
         if(groupSelectionDropDownMenu != null){
             groupSelectionDropDownMenu.onMouseMove(x,y);
         }
-        super.mouseMoved(x, y);
+        super.mouseMoved(x,y);
     }
 
     @Override
