@@ -13,7 +13,7 @@ idea {
     }
 }
 
-version = '1.15.0'
+version = project.mod_version
 group = 'com.talhanation.recruits'
 archivesBaseName = 'recruits-1.21.1'
 
@@ -75,6 +75,8 @@ repositories {
 }
 
 dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.11.4'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.4'
     shadow 'de.maxhenkel.corelib:corelib:1.21.1-2.1.11:api'
     runtimeOnly 'de.maxhenkel.corelib:corelib:1.21.1-2.1.11'
     runtimeOnly 'de.maxhenkel.corelib:corelib:1.21.1-2.1.11:javadoc'
@@ -89,6 +91,13 @@ dependencies {
     compileOnly 'curse.maven:worldedit-225608:4586218'
     compileOnly 'curse.maven:small-ships-450659:5566900'
     compileOnly 'curse.maven:siegeweapons-1259343:7906096'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+    testLogging {
+        events 'passed', 'skipped', 'failed'
+    }
 }
 
 artifacts {

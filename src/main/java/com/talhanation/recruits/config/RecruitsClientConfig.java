@@ -131,6 +131,12 @@ public class RecruitsClientConfig {
     }
 
 
+    public static boolean useVillagerSounds() {
+        // CLIENT configs are not loaded on dedicated servers. Use the declared
+        // default (true) there, and preserve the configured choice on clients.
+        return !CLIENT.isLoaded() || RecruitsLookLikeVillagers.get();
+    }
+
     public static void loadConfig(ModConfigSpec spec, Path path) {
         CommentedFileConfig configData = CommentedFileConfig.builder(path)
                 .sync()

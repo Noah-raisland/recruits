@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - neoforge-1.21.1
+      - fix/dedicated-server-sounds
   pull_request:
     branches:
       - main
@@ -35,5 +36,12 @@ jobs:
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: recruits-neoforge-1.21.1
-          path: build/libs/*.jar
+          name: recruits-neoforge-1.21.1-serverfix
+          path: build/libs/*-all.jar
+
+      - name: Upload regression test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: recruits-serverfix-test-results
+          path: build/test-results/test/*.xml
