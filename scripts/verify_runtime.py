@@ -73,6 +73,9 @@ def run_server(root, commands, logfile, marker):
 
 
 def client():
+    # Hosted runners have no physical audio card. OpenAL's null output still
+    # exercises Minecraft sound-engine initialization without needing hardware.
+    os.environ.setdefault('ALSOFT_DRIVERS', 'null')
     path = Path('client-smoke.log')
     marker = 'minecraft:textures/atlas/gui.png-atlas'
     with path.open('w') as log:
@@ -93,6 +96,7 @@ def client():
             text = path.read_text(errors='replace')
             print('\n'.join(text.splitlines()[-100:]))
     assert marker in text
+    assert 'Error starting SoundSystem' not in text, 'Sound engine failed'
     assert 'Failed to load model recruits:' not in text, 'Recruit model failed'
     assert 'Caught exception during event' not in text, 'Client setup failed'
     print('Client loaded Recruits renderers and resources.')
