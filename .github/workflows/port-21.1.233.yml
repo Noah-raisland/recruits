@@ -6,9 +6,9 @@ on:
 permissions:
   contents: read
 jobs:
-  build:
+  verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -19,6 +19,14 @@ jobs:
       - run: chmod +x gradlew
       - name: Build production JAR and regression tests
         run: ./gradlew clean build shadowJar --stacktrace
+      - name: Verify server gameplay
+        run: ./gradlew runGameTestServer --stacktrace
+      - name: Verify packaged mod and server restart
+        run: python scripts/verify_runtime.py server
+      - name: Install virtual client display
+        run: sudo apt-get update && sudo apt-get install -y xvfb libgl1-mesa-dri libopenal1
+      - name: Verify client renderers and resources
+        run: python scripts/verify_runtime.py client
       - uses: actions/upload-artifact@v4
         with:
           name: recruits-1.21.1-neoforge-21.1.233
@@ -27,5 +35,9 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: recruits-build-reports
-          path: build/test-results/test/
+          name: recruits-verification-logs
+          path: |
+            build/test-results/
+            run-gametest/logs/
+            production-server/*.log
+            client-smoke.log
